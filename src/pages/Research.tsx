@@ -17,6 +17,8 @@ import {
   ScriptCount,
   SECTORS,
   Sector,
+  COMMODITY_CATEGORIES,
+  CommodityCategory,
 } from "@/types/investment";
 
 const TENURE_OPTIONS: { value: Tenure; label: string; desc: string }[] = [
@@ -35,7 +37,9 @@ const RISK_OPTIONS: { value: RiskAppetite; label: string; desc: string }[] = [
 const INSTRUMENT_OPTIONS: { value: InstrumentType; label: string }[] = [
   { value: "equities", label: "Equities" },
   { value: "mutual-funds", label: "Mutual Funds" },
-  { value: "both", label: "Both" },
+  { value: "commodities", label: "Commodities" },
+  { value: "both-equity-mf", label: "Equities + MF" },
+  { value: "all", label: "All" },
 ];
 
 const MARKET_CAP_OPTIONS: { value: MarketCap; label: string }[] = [
@@ -98,19 +102,26 @@ function OptionPill({
   );
 }
 
+const showCommodities = (instrument: InstrumentType) =>
+  instrument === "commodities" || instrument === "all";
+
+const showEquityMF = (instrument: InstrumentType) =>
+  instrument !== "commodities";
+
 const Research = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState<InvestmentFormData>({
     tenure: "medium",
     amount: "",
     risk: "moderate",
-    instrument: "both",
+    instrument: "both-equity-mf",
     sectors: [],
     marketCap: "no-preference",
     geoExposure: "india",
     existingHoldings: "",
     taxRegime: "new",
     scriptCount: "auto",
+    commodityCategories: [],
   });
 
   const toggleSector = (sector: Sector) => {
@@ -122,9 +133,17 @@ const Research = () => {
     }));
   };
 
+  const toggleCommodityCategory = (cat: CommodityCategory) => {
+    setForm((prev) => ({
+      ...prev,
+      commodityCategories: prev.commodityCategories.includes(cat)
+        ? prev.commodityCategories.filter((c) => c !== cat)
+        : [...prev.commodityCategories, cat],
+    }));
+  };
+
   const handleSubmit = () => {
     if (!form.amount) return;
-    // Store form data and navigate to analysis
     sessionStorage.setItem("researchForm", JSON.stringify(form));
     navigate("/analysis");
   };
@@ -145,12 +164,7 @@ const Research = () => {
           <Label className="text-sm font-semibold text-foreground uppercase tracking-wider">Investment Tenure</Label>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {TENURE_OPTIONS.map((opt) => (
-              <OptionPill
-                key={opt.value}
-                selected={form.tenure === opt.value}
-                onClick={() => setForm((p) => ({ ...p, tenure: opt.value }))}
-                subtitle={opt.desc}
-              >
+              <OptionPill key={opt.value} selected={form.tenure === opt.value} onClick={() => setForm((p) => ({ ...p, tenure: opt.value }))} subtitle={opt.desc}>
                 {opt.label}
               </OptionPill>
             ))}
@@ -160,13 +174,7 @@ const Research = () => {
         {/* Amount */}
         <section className="space-y-3">
           <Label className="text-sm font-semibold text-foreground uppercase tracking-wider">Investment Amount (₹)</Label>
-          <Input
-            type="text"
-            placeholder="e.g. 5,00,000"
-            value={form.amount}
-            onChange={(e) => setForm((p) => ({ ...p, amount: e.target.value }))}
-            className="h-12 text-base font-mono"
-          />
+          <Input type="text" placeholder="e.g. 5,00,000" value={form.amount} onChange={(e) => setForm((p) => ({ ...p, amount: e.target.value }))} className="h-12 text-base font-mono" />
         </section>
 
         {/* Risk */}
@@ -174,12 +182,7 @@ const Research = () => {
           <Label className="text-sm font-semibold text-foreground uppercase tracking-wider">Risk Appetite</Label>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
             {RISK_OPTIONS.map((opt) => (
-              <OptionPill
-                key={opt.value}
-                selected={form.risk === opt.value}
-                onClick={() => setForm((p) => ({ ...p, risk: opt.value }))}
-                subtitle={opt.desc}
-              >
+              <OptionPill key={opt.value} selected={form.risk === opt.value} onClick={() => setForm((p) => ({ ...p, risk: opt.value }))} subtitle={opt.desc}>
                 {opt.label}
               </OptionPill>
             ))}
@@ -189,68 +192,76 @@ const Research = () => {
         {/* Instrument */}
         <section className="space-y-3">
           <Label className="text-sm font-semibold text-foreground uppercase tracking-wider">Instrument Type</Label>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
             {INSTRUMENT_OPTIONS.map((opt) => (
-              <OptionPill
-                key={opt.value}
-                selected={form.instrument === opt.value}
-                onClick={() => setForm((p) => ({ ...p, instrument: opt.value }))}
-              >
+              <OptionPill key={opt.value} selected={form.instrument === opt.value} onClick={() => setForm((p) => ({ ...p, instrument: opt.value }))}>
                 {opt.label}
               </OptionPill>
             ))}
           </div>
         </section>
 
-        {/* Sectors */}
-        <section className="space-y-3">
-          <Label className="text-sm font-semibold text-foreground uppercase tracking-wider">
-            Sector Preference <span className="text-muted-foreground font-normal normal-case">(optional, multi-select)</span>
-          </Label>
-          <div className="flex flex-wrap gap-2">
-            {SECTORS.map((sector) => (
-              <button
-                key={sector}
-                type="button"
-                onClick={() => toggleSector(sector)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                  form.sectors.includes(sector)
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-card text-muted-foreground border-border hover:border-primary/40"
-                }`}
-              >
-                {sector}
-              </button>
-            ))}
-          </div>
-        </section>
+        {/* Commodity Categories — shown when commodities selected */}
+        {showCommodities(form.instrument) && (
+          <section className="space-y-3">
+            <Label className="text-sm font-semibold text-foreground uppercase tracking-wider">
+              Commodity Categories <span className="text-muted-foreground font-normal normal-case">(optional, multi-select)</span>
+            </Label>
+            <div className="flex flex-wrap gap-2">
+              {COMMODITY_CATEGORIES.map((cat) => (
+                <button
+                  key={cat.value}
+                  type="button"
+                  onClick={() => toggleCommodityCategory(cat.value)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                    form.commodityCategories.includes(cat.value)
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-card text-muted-foreground border-border hover:border-primary/40"
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
 
-        {/* Market Cap */}
-        <section className="space-y-3">
-          <Label className="text-sm font-semibold text-foreground uppercase tracking-wider">Market Cap Preference</Label>
-          <div className="flex flex-wrap gap-2">
-            {MARKET_CAP_OPTIONS.map((opt) => (
-              <OptionPill
-                key={opt.value}
-                selected={form.marketCap === opt.value}
-                onClick={() => setForm((p) => ({ ...p, marketCap: opt.value }))}
-              >
-                {opt.label}
-              </OptionPill>
-            ))}
-          </div>
-        </section>
+        {/* Sectors — hidden when only commodities */}
+        {showEquityMF(form.instrument) && (
+          <section className="space-y-3">
+            <Label className="text-sm font-semibold text-foreground uppercase tracking-wider">
+              Sector Preference <span className="text-muted-foreground font-normal normal-case">(optional, multi-select)</span>
+            </Label>
+            <div className="flex flex-wrap gap-2">
+              {SECTORS.map((sector) => (
+                <button key={sector} type="button" onClick={() => toggleSector(sector)} className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${form.sectors.includes(sector) ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground border-border hover:border-primary/40"}`}>
+                  {sector}
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Market Cap — hidden when only commodities */}
+        {showEquityMF(form.instrument) && (
+          <section className="space-y-3">
+            <Label className="text-sm font-semibold text-foreground uppercase tracking-wider">Market Cap Preference</Label>
+            <div className="flex flex-wrap gap-2">
+              {MARKET_CAP_OPTIONS.map((opt) => (
+                <OptionPill key={opt.value} selected={form.marketCap === opt.value} onClick={() => setForm((p) => ({ ...p, marketCap: opt.value }))}>
+                  {opt.label}
+                </OptionPill>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Geo Exposure */}
         <section className="space-y-3">
           <Label className="text-sm font-semibold text-foreground uppercase tracking-wider">Geographic Exposure</Label>
           <div className="grid grid-cols-3 gap-2">
             {GEO_OPTIONS.map((opt) => (
-              <OptionPill
-                key={opt.value}
-                selected={form.geoExposure === opt.value}
-                onClick={() => setForm((p) => ({ ...p, geoExposure: opt.value }))}
-              >
+              <OptionPill key={opt.value} selected={form.geoExposure === opt.value} onClick={() => setForm((p) => ({ ...p, geoExposure: opt.value }))}>
                 {opt.label}
               </OptionPill>
             ))}
@@ -262,13 +273,7 @@ const Research = () => {
           <Label className="text-sm font-semibold text-foreground uppercase tracking-wider">
             Existing Holdings <span className="text-muted-foreground font-normal normal-case">(optional — to avoid overlap)</span>
           </Label>
-          <Textarea
-            placeholder="e.g. HDFC Bank, SBI Bluechip Fund, Infosys..."
-            value={form.existingHoldings}
-            onChange={(e) => setForm((p) => ({ ...p, existingHoldings: e.target.value }))}
-            className="font-mono text-sm"
-            rows={3}
-          />
+          <Textarea placeholder="e.g. HDFC Bank, SBI Bluechip Fund, Gold ETF, Infosys..." value={form.existingHoldings} onChange={(e) => setForm((p) => ({ ...p, existingHoldings: e.target.value }))} className="font-mono text-sm" rows={3} />
         </section>
 
         {/* Tax Regime */}
@@ -276,11 +281,7 @@ const Research = () => {
           <Label className="text-sm font-semibold text-foreground uppercase tracking-wider">Tax Regime</Label>
           <div className="grid grid-cols-2 gap-2">
             {TAX_OPTIONS.map((opt) => (
-              <OptionPill
-                key={opt.value}
-                selected={form.taxRegime === opt.value}
-                onClick={() => setForm((p) => ({ ...p, taxRegime: opt.value }))}
-              >
+              <OptionPill key={opt.value} selected={form.taxRegime === opt.value} onClick={() => setForm((p) => ({ ...p, taxRegime: opt.value }))}>
                 {opt.label}
               </OptionPill>
             ))}
@@ -289,17 +290,10 @@ const Research = () => {
 
         {/* Number of Scripts/Funds */}
         <section className="space-y-3">
-          <Label className="text-sm font-semibold text-foreground uppercase tracking-wider">
-            Number of Scripts / Funds
-          </Label>
+          <Label className="text-sm font-semibold text-foreground uppercase tracking-wider">Number of Scripts / Funds</Label>
           <div className="flex flex-wrap gap-2">
             {SCRIPT_COUNT_OPTIONS.map((opt) => (
-              <OptionPill
-                key={opt.value}
-                selected={form.scriptCount === opt.value}
-                onClick={() => setForm((p) => ({ ...p, scriptCount: opt.value }))}
-                subtitle={opt.desc}
-              >
+              <OptionPill key={opt.value} selected={form.scriptCount === opt.value} onClick={() => setForm((p) => ({ ...p, scriptCount: opt.value }))} subtitle={opt.desc}>
                 {opt.label}
               </OptionPill>
             ))}
@@ -310,15 +304,9 @@ const Research = () => {
         <Card className="border-primary/20 bg-secondary/50">
           <CardContent className="p-6 flex flex-col items-center gap-4">
             <p className="text-sm text-muted-foreground text-center font-narrative text-base">
-              The AI will analyze your inputs using fundamental, technical, and geopolitical intelligence
-              to generate a comprehensive research report.
+              The AI will analyze your inputs using fundamental, technical, and geopolitical intelligence to generate a comprehensive research report.
             </p>
-            <Button
-              size="lg"
-              className="h-14 px-12 text-base font-semibold rounded-lg shadow-lg shadow-primary/20"
-              onClick={handleSubmit}
-              disabled={!form.amount}
-            >
+            <Button size="lg" className="h-14 px-12 text-base font-semibold rounded-lg shadow-lg shadow-primary/20" onClick={handleSubmit} disabled={!form.amount}>
               <Sparkles className="mr-2 h-5 w-5" />
               Generate Analysis
             </Button>

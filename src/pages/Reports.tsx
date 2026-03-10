@@ -53,7 +53,7 @@ const Reports = () => {
                   <CardContent className="p-4 flex items-center justify-between">
                     <div className="space-y-1">
                       <p className="font-semibold text-sm text-foreground">
-                        {fd.risk.charAt(0).toUpperCase() + fd.risk.slice(1)} · {fd.instrument === "both" ? "Equity + MF" : fd.instrument === "equities" ? "Equities" : "Mutual Funds"} · ₹{fd.amount}
+                        {fd.risk.charAt(0).toUpperCase() + fd.risk.slice(1)} · {fd.instrument === "both-equity-mf" ? "Equity + MF" : fd.instrument === "all" ? "All" : fd.instrument === "equities" ? "Equities" : fd.instrument === "commodities" ? "Commodities" : "Mutual Funds"} · ₹{fd.amount}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {date.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} ·{" "}
