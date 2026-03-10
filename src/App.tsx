@@ -8,6 +8,8 @@ import Research from "./pages/Research";
 import Analysis from "./pages/Analysis";
 import Report from "./pages/Report";
 import Reports from "./pages/Reports";
+import QuickResearch from "./pages/QuickResearch";
+import QuickReport from "./pages/QuickReport";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +26,8 @@ const App = () => (
           <Route path="/analysis" element={<Analysis />} />
           <Route path="/report/:id" element={<Report />} />
           <Route path="/reports" element={<Reports />} />
+          <Route path="/quick-research" element={<QuickResearch />} />
+          <Route path="/quick-report/:name" element={<QuickReport />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

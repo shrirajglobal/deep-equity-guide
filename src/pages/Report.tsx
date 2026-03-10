@@ -4,12 +4,13 @@ import { ResearchReport } from "@/types/investment";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, BarChart3 } from "lucide-react";
+import { ArrowLeft, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, BarChart3, Gem } from "lucide-react";
 
 const AllocationBar = ({ allocation }: { allocation: ResearchReport["assetAllocation"] }) => {
   const items = [
     { label: "Equity", value: allocation.equity, color: "bg-primary" },
     { label: "Mutual Funds", value: allocation.mutualFunds, color: "bg-chart-2" },
+    { label: "Commodities", value: allocation.commodities, color: "bg-chart-5" },
     { label: "Debt", value: allocation.debt, color: "bg-chart-3" },
     { label: "Gold", value: allocation.gold, color: "bg-chart-4" },
   ].filter((i) => i.value > 0);
@@ -18,11 +19,7 @@ const AllocationBar = ({ allocation }: { allocation: ResearchReport["assetAlloca
     <div className="space-y-3">
       <div className="flex h-8 rounded-lg overflow-hidden">
         {items.map((item) => (
-          <div
-            key={item.label}
-            className={`${item.color} flex items-center justify-center text-xs font-bold text-primary-foreground`}
-            style={{ width: `${item.value}%` }}
-          >
+          <div key={item.label} className={`${item.color} flex items-center justify-center text-xs font-bold text-primary-foreground`} style={{ width: `${item.value}%` }}>
             {item.value}%
           </div>
         ))}
@@ -58,7 +55,6 @@ const Report = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b border-border/60 px-6 py-4 flex items-center justify-between sticky top-0 bg-background/95 backdrop-blur z-10">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
@@ -71,9 +67,7 @@ const Report = () => {
             </p>
           </div>
         </div>
-        <Button variant="outline" size="sm" onClick={() => navigate("/reports")}>
-          All Reports
-        </Button>
+        <Button variant="outline" size="sm" onClick={() => navigate("/reports")}>All Reports</Button>
       </header>
 
       <main className="max-w-3xl mx-auto px-6 py-8 space-y-8">
@@ -140,7 +134,7 @@ const Report = () => {
           </section>
         )}
 
-        {report.equityRecommendations.length > 0 && report.mutualFundRecommendations.length > 0 && <Separator />}
+        {report.equityRecommendations.length > 0 && (report.mutualFundRecommendations.length > 0 || report.commodityRecommendations.length > 0) && <Separator />}
 
         {/* Mutual Fund Recommendations */}
         {report.mutualFundRecommendations.length > 0 && (
@@ -187,6 +181,52 @@ const Report = () => {
           </section>
         )}
 
+        {report.mutualFundRecommendations.length > 0 && report.commodityRecommendations.length > 0 && <Separator />}
+
+        {/* Commodity Recommendations */}
+        {report.commodityRecommendations.length > 0 && (
+          <section className="space-y-4">
+            <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+              <Gem className="h-5 w-5 text-primary" />
+              Commodity Recommendations
+            </h2>
+            <div className="space-y-4">
+              {report.commodityRecommendations.map((commodity, i) => (
+                <Card key={i} className="border-border/60">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <CardTitle className="text-lg">{commodity.name}</CardTitle>
+                        <p className="text-xs text-muted-foreground mt-1">{commodity.exchange} · {commodity.category.charAt(0).toUpperCase() + commodity.category.slice(1)}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-mono font-semibold text-foreground">CMP: {commodity.cmp}</p>
+                        <p className="text-sm font-mono text-success">Target: {commodity.target}</p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <p className="font-narrative text-sm text-foreground/90 leading-relaxed">{commodity.rationale}</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {[
+                        { label: "Market Demand", value: commodity.demandAnalysis },
+                        { label: "Fundamentals", value: commodity.fundamentals },
+                        { label: "Technicals", value: commodity.technicals },
+                        { label: "Geopolitical", value: commodity.geopolitical },
+                      ].map((detail) => (
+                        <div key={detail.label} className="bg-secondary/50 rounded-lg p-3">
+                          <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-1">{detail.label}</p>
+                          <p className="text-xs text-muted-foreground leading-relaxed">{detail.value}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
+        )}
+
         <Separator />
 
         {/* Risk Factors */}
@@ -216,7 +256,6 @@ const Report = () => {
           <p className="font-narrative text-base leading-relaxed text-foreground/90">{report.diversificationNote}</p>
         </section>
 
-        {/* Disclaimer */}
         <div className="mt-12 p-4 rounded-lg bg-secondary/50 border border-border/50">
           <p className="text-xs text-muted-foreground text-center">
             This report is generated for personal research purposes only. It does not constitute financial advice.
