@@ -100,6 +100,7 @@ const Research = () => {
     geoExposure: "india",
     existingHoldings: "",
     taxRegime: "new",
+    scriptCount: "auto",
   });
 
   const toggleSector = (sector: Sector) => {
