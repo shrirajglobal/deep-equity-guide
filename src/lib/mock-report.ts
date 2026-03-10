@@ -1,4 +1,4 @@
-import { InvestmentFormData, ResearchReport, StockRecommendation, MutualFundRecommendation } from "@/types/investment";
+import { InvestmentFormData, ResearchReport, StockRecommendation, MutualFundRecommendation, CommodityRecommendation } from "@/types/investment";
 
 const STOCK_DB: StockRecommendation[] = [
   {
@@ -101,42 +101,146 @@ const MF_DB: MutualFundRecommendation[] = [
   },
 ];
 
-export function generateMockReport(formData: InvestmentFormData): ResearchReport {
-  const showEquities = formData.instrument === "equities" || formData.instrument === "both";
-  const showMF = formData.instrument === "mutual-funds" || formData.instrument === "both";
+const COMMODITY_DB: CommodityRecommendation[] = [
+  {
+    name: "Gold",
+    category: "metals",
+    exchange: "MCX",
+    cmp: "₹62,500/10g",
+    target: "₹68,000/10g",
+    rationale: "Safe haven asset with strong uptrend amid global uncertainty. Central banks globally increasing gold reserves.",
+    demandAnalysis: "Wedding/festive season demand strong. Investment demand surging via ETFs and sovereign gold bonds.",
+    fundamentals: "Gold-to-S&P ratio improving. Real interest rates negative globally — bullish for gold.",
+    technicals: "Trading above all key moving averages. RSI 65. Support at ₹60,000. Breakout confirmed above ₹61,500.",
+    geopolitical: "US-China tensions, Middle East conflict, and de-dollarization trend driving institutional buying.",
+  },
+  {
+    name: "Silver",
+    category: "metals",
+    exchange: "MCX",
+    cmp: "₹75,800/kg",
+    target: "₹85,000/kg",
+    rationale: "Dual play — industrial metal + precious metal. EV and solar panel demand creating structural floor.",
+    demandAnalysis: "Industrial demand from EV batteries and solar cells growing 15% annually. Supply deficit widening.",
+    fundamentals: "Gold-Silver ratio at 80 — historically overvalued, suggesting silver outperformance ahead.",
+    technicals: "Cup and handle pattern on weekly chart. Support at ₹72,000. Momentum building.",
+    geopolitical: "Green energy transition policies globally creating sustained industrial demand.",
+  },
+  {
+    name: "Crude Oil",
+    category: "energy",
+    exchange: "MCX",
+    cmp: "₹6,200/barrel",
+    target: "₹6,800/barrel",
+    rationale: "OPEC+ production cuts supporting prices. Global demand recovery post-slowdown.",
+    demandAnalysis: "China reopening boosting demand. India's consumption at record highs.",
+    fundamentals: "Inventory draws consistent. OPEC+ compliance high. Spare capacity limited.",
+    technicals: "Basing pattern near ₹6,000 support. MACD turning positive. RSI recovering from oversold.",
+    geopolitical: "Middle East tensions and Russia sanctions keeping supply risks elevated.",
+  },
+  {
+    name: "Natural Gas",
+    category: "energy",
+    exchange: "MCX",
+    cmp: "₹230/mmBtu",
+    target: "₹280/mmBtu",
+    rationale: "Transition fuel gaining importance. LNG infrastructure build-out creating demand floor.",
+    demandAnalysis: "Power sector switching from coal to gas. City gas distribution expansion in India.",
+    fundamentals: "Storage levels below 5-year average. Production growth plateauing in US.",
+    technicals: "Double bottom formation at ₹200. Breakout above ₹240 would confirm bullish reversal.",
+    geopolitical: "European energy security concerns driving LNG import diversification.",
+  },
+  {
+    name: "USD/INR",
+    category: "currency",
+    exchange: "MCX-SX",
+    cmp: "₹83.50",
+    target: "₹85.00",
+    rationale: "RBI managing gradual depreciation. Current account deficit and FII flows key drivers.",
+    demandAnalysis: "Import demand for crude oil and electronics keeping USD demand high.",
+    fundamentals: "Real effective exchange rate (REER) suggests INR slightly overvalued. Gradual depreciation expected.",
+    technicals: "Channel pattern between ₹82.50-₹84.00. Breakout above ₹84 signals move to ₹85+.",
+    geopolitical: "Fed rate trajectory and India's forex reserves ($620B) providing stability.",
+  },
+  {
+    name: "Wheat",
+    category: "food-grains",
+    exchange: "NCDEX",
+    cmp: "₹2,450/quintal",
+    target: "₹2,700/quintal",
+    rationale: "Monsoon uncertainties and government procurement policies creating upside potential.",
+    demandAnalysis: "Population growth and food security concerns keeping demand structurally high.",
+    fundamentals: "MSP increases annual. Buffer stock levels adequate but below optimal.",
+    technicals: "Seasonal bottom forming. Historical pattern shows rally from March-June.",
+    geopolitical: "Global wheat supply disrupted by Black Sea conflict. India's export ban keeping domestic supply stable.",
+  },
+  {
+    name: "Soybean",
+    category: "food-grains",
+    exchange: "NCDEX",
+    cmp: "₹4,800/quintal",
+    target: "₹5,400/quintal",
+    rationale: "Crushing demand for soy oil and meal robust. Acreage uncertainty adding supply risk premium.",
+    demandAnalysis: "Animal feed industry growing 8% annually. Soy oil demand for cooking at all-time high.",
+    fundamentals: "Global soybean stocks-to-use ratio tightening. Brazil/Argentina crop outlook mixed.",
+    technicals: "Support at ₹4,500 holding well. RSI neutral at 52. Accumulation zone.",
+    geopolitical: "US-China trade dynamics and South American weather patterns key watchpoints.",
+  },
+  {
+    name: "Cotton",
+    category: "others",
+    exchange: "MCX",
+    cmp: "₹56,000/bale",
+    target: "₹62,000/bale",
+    rationale: "Textile export recovery and domestic consumption driving demand. Acreage shift to other crops limiting supply.",
+    demandAnalysis: "Textile sector recovery post-pandemic. Government's PLI scheme for textiles boosting demand.",
+    fundamentals: "Global cotton stocks declining. India is 2nd largest producer but domestic consumption absorbing supply.",
+    technicals: "Basing above ₹54,000. Volume pick-up suggesting accumulation. Seasonal rally expected.",
+    geopolitical: "China's textile policy and Bangladesh garment industry demand impacting global trade flows.",
+  },
+];
 
-  let equityPct = 0, mfPct = 0, debtPct = 0, goldPct = 0;
+export function generateMockReport(formData: InvestmentFormData): ResearchReport {
+  const showEquities = formData.instrument === "equities" || formData.instrument === "both-equity-mf" || formData.instrument === "all";
+  const showMF = formData.instrument === "mutual-funds" || formData.instrument === "both-equity-mf" || formData.instrument === "all";
+  const showCommodities = formData.instrument === "commodities" || formData.instrument === "all";
+
+  let equityPct = 0, mfPct = 0, debtPct = 0, goldPct = 0, commodityPct = 0;
 
   if (formData.risk === "aggressive") {
-    equityPct = showEquities ? 55 : 0;
-    mfPct = showMF ? 30 : 0;
+    equityPct = showEquities ? 45 : 0;
+    mfPct = showMF ? 25 : 0;
+    commodityPct = showCommodities ? 15 : 0;
     debtPct = 10;
     goldPct = 5;
   } else if (formData.risk === "moderate") {
-    equityPct = showEquities ? 40 : 0;
-    mfPct = showMF ? 35 : 0;
+    equityPct = showEquities ? 35 : 0;
+    mfPct = showMF ? 25 : 0;
+    commodityPct = showCommodities ? 15 : 0;
     debtPct = 15;
     goldPct = 10;
   } else {
-    equityPct = showEquities ? 20 : 0;
-    mfPct = showMF ? 40 : 0;
+    equityPct = showEquities ? 15 : 0;
+    mfPct = showMF ? 30 : 0;
+    commodityPct = showCommodities ? 15 : 0;
     debtPct = 30;
     goldPct = 10;
   }
 
-  // Redistribute if one instrument type is excluded
-  if (!showEquities) {
-    mfPct += equityPct;
-    equityPct = 0;
-  }
-  if (!showMF) {
-    equityPct += mfPct;
-    mfPct = 0;
+  // Redistribute if instrument types are excluded
+  const totalExcluded = (!showEquities ? equityPct : 0) + (!showMF ? mfPct : 0) + (!showCommodities ? commodityPct : 0);
+  if (totalExcluded > 0) {
+    const activeCount = [showEquities, showMF, showCommodities].filter(Boolean).length;
+    const redistribution = activeCount > 0 ? totalExcluded / activeCount : 0;
+    if (!showEquities) equityPct = 0; else equityPct += redistribution;
+    if (!showMF) mfPct = 0; else mfPct += redistribution;
+    if (!showCommodities) commodityPct = 0; else commodityPct += redistribution;
   }
 
   // Determine count
   const autoStockCount = formData.risk === "aggressive" ? 4 : 3;
   const autoMFCount = formData.risk === "aggressive" ? 4 : 3;
+  const autoCommodityCount = formData.risk === "aggressive" ? 4 : 3;
   const userCount = formData.scriptCount === "auto" ? null : parseInt(formData.scriptCount);
 
   // Pick stocks based on sector preference
@@ -148,9 +252,17 @@ export function generateMockReport(formData: InvestmentFormData): ResearchReport
     stocks = sectorFiltered.length >= 2 ? sectorFiltered : STOCK_DB;
   }
   const selectedStocks = stocks.slice(0, userCount ?? autoStockCount);
-
-  // Pick MFs
   const selectedMFs = MF_DB.slice(0, userCount ?? autoMFCount);
+
+  // Pick commodities based on category preference
+  let commodities = COMMODITY_DB;
+  if (formData.commodityCategories && formData.commodityCategories.length > 0) {
+    const catFiltered = COMMODITY_DB.filter((c) =>
+      formData.commodityCategories.includes(c.category)
+    );
+    commodities = catFiltered.length >= 2 ? catFiltered : COMMODITY_DB;
+  }
+  const selectedCommodities = commodities.slice(0, userCount ?? autoCommodityCount);
 
   const riskLabel = formData.risk.charAt(0).toUpperCase() + formData.risk.slice(1);
   const tenureLabel =
@@ -158,26 +270,38 @@ export function generateMockReport(formData: InvestmentFormData): ResearchReport
     formData.tenure === "medium" ? "3-7 year" :
     formData.tenure === "long" ? "7-15 year" : "15+ year";
 
+  const parts: string[] = [];
+  if (showEquities) parts.push(`${selectedStocks.length} equity scripts`);
+  if (showMF) parts.push(`${selectedMFs.length} mutual funds`);
+  if (showCommodities) parts.push(`${selectedCommodities.length} commodity contracts`);
+
   return {
     id: crypto.randomUUID(),
     createdAt: new Date().toISOString(),
     formData,
-    executiveSummary: `This research report is tailored for a ${riskLabel} investor with a ${tenureLabel} horizon and an investment corpus of ₹${formData.amount}. The analysis incorporates fundamental strength, market demand dynamics, technical positioning, and current geopolitical factors. The asset allocation prioritizes ${formData.risk === "aggressive" ? "growth with calculated risk exposure" : formData.risk === "moderate" ? "balanced growth with downside protection" : "capital preservation with steady income generation"}. ${showEquities ? `${selectedStocks.length} equity scripts` : ""}${showEquities && showMF ? " and " : ""}${showMF ? `${selectedMFs.length} mutual funds` : ""} have been carefully selected — enough for meaningful diversification without diluting conviction.`,
+    executiveSummary: `This research report is tailored for a ${riskLabel} investor with a ${tenureLabel} horizon and an investment corpus of ₹${formData.amount}. The analysis incorporates fundamental strength, market demand dynamics, technical positioning, and current geopolitical factors. The asset allocation prioritizes ${formData.risk === "aggressive" ? "growth with calculated risk exposure" : formData.risk === "moderate" ? "balanced growth with downside protection" : "capital preservation with steady income generation"}. ${parts.join(" and ")} have been carefully selected — enough for meaningful diversification without diluting conviction.`,
     assetAllocation: {
-      equity: equityPct,
-      mutualFunds: mfPct,
-      debt: debtPct,
-      gold: goldPct,
+      equity: Math.round(equityPct),
+      mutualFunds: Math.round(mfPct),
+      debt: Math.round(debtPct),
+      gold: Math.round(goldPct),
+      commodities: Math.round(commodityPct),
     },
     equityRecommendations: showEquities ? selectedStocks : [],
     mutualFundRecommendations: showMF ? selectedMFs : [],
+    commodityRecommendations: showCommodities ? selectedCommodities : [],
     riskFactors: [
       "Global interest rate changes could impact equity valuations and fund NAVs.",
       "Geopolitical tensions (Middle East, US-China) may cause short-term volatility.",
       "Sector concentration risk if preference sectors face regulatory headwinds.",
       "Currency fluctuation risk for funds with international exposure.",
       "Liquidity risk in small/mid cap segments during market stress periods.",
+      ...(showCommodities ? [
+        "Commodity prices are highly sensitive to global supply chain disruptions.",
+        "Weather patterns and monsoon performance directly impact agri-commodity prices.",
+        "Regulatory changes (export bans, import duties) can cause sharp commodity price swings.",
+      ] : []),
     ],
-    diversificationNote: `This portfolio recommends ${showEquities ? selectedStocks.length + " stocks" : ""}${showEquities && showMF ? " and " : ""}${showMF ? selectedMFs.length + " mutual funds" : ""} — deliberately limited to maintain conviction while ensuring adequate diversification. Over-diversification (10+ scripts) dilutes returns and makes monitoring impractical. Each selection serves a distinct purpose in the portfolio with minimal overlap.`,
+    diversificationNote: `This portfolio recommends ${parts.join(" and ")} — deliberately limited to maintain conviction while ensuring adequate diversification. Over-diversification dilutes returns and makes monitoring impractical. Each selection serves a distinct purpose in the portfolio with minimal overlap.`,
   };
 }
