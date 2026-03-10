@@ -22,6 +22,7 @@ const QuickReport = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loadingStep, setLoadingStep] = useState(0);
+  const [priceSource, setPriceSource] = useState<string>("ai-estimated");
 
   const loadingSteps = [
     "Analyzing market data...",
