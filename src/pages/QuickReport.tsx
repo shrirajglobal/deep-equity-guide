@@ -126,6 +126,10 @@ const QuickReport = () => {
 
   const vc = verdictConfig[report.verdict];
   const VerdictIcon = vc.icon;
+  const hasLivePrice = priceSource !== "ai-estimated";
+  const sourceLabel = hasLivePrice
+    ? (priceSource === "yahoo-finance" ? "Live Price (Yahoo)" : "Live Price (Fallback)")
+    : "AI Estimated";
 
   const sections = [
     { icon: Eye, label: "Overview", content: report.overview },
@@ -156,8 +160,8 @@ const QuickReport = () => {
           <div>
             <p className="text-sm text-muted-foreground">Current Price</p>
             <p className="text-3xl font-mono font-bold text-foreground">{report.currentPrice}</p>
-            <Badge variant={priceSource === "yahoo-finance" ? "default" : "secondary"} className="mt-1 text-[10px]">
-              {priceSource === "yahoo-finance" ? "Live Price" : "AI Estimated"}
+            <Badge variant={hasLivePrice ? "default" : "secondary"} className="mt-1 text-[10px]">
+              {sourceLabel}
             </Badge>
           </div>
           <Card className={`border ${vc.bg}`}>
