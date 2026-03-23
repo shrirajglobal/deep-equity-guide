@@ -6,7 +6,20 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, TrendingUp, BarChart3, Globe, Activity, Eye, CheckCircle, AlertTriangle, MinusCircle, Search, Share2, Copy } from "lucide-react";
+import {
+  ArrowLeft,
+  TrendingUp,
+  BarChart3,
+  Globe,
+  Activity,
+  Eye,
+  CheckCircle,
+  AlertTriangle,
+  MinusCircle,
+  Search,
+  Share2,
+  Copy,
+} from "lucide-react";
 import { toast } from "sonner";
 
 const verdictConfig = {
@@ -95,7 +108,10 @@ const QuickReport = () => {
           </div>
           <div className="flex gap-1 justify-center">
             {loadingSteps.map((_, i) => (
-              <div key={i} className={`h-1.5 w-8 rounded-full transition-all duration-500 ${i <= loadingStep ? "bg-primary" : "bg-secondary"}`} />
+              <div
+                key={i}
+                className={`h-1.5 w-8 rounded-full transition-all duration-500 ${i <= loadingStep ? "bg-primary" : "bg-secondary"}`}
+              />
             ))}
           </div>
         </div>
@@ -126,6 +142,12 @@ const QuickReport = () => {
 
   const vc = verdictConfig[report.verdict];
   const VerdictIcon = vc.icon;
+  const hasLivePrice = priceSource !== "ai-estimated";
+  const sourceLabel = hasLivePrice
+    ? priceSource === "yahoo-finance"
+      ? "Live Price (Yahoo)"
+      : "Live Price (Fallback)"
+    : "AI Estimated";
 
   const sections = [
     { icon: Eye, label: "Overview", content: report.overview },
@@ -143,7 +165,9 @@ const QuickReport = () => {
         </Button>
         <div className="flex-1">
           <span className="text-lg font-semibold text-foreground">{report.name}</span>
-          <p className="text-xs text-muted-foreground">{report.exchange} · {report.category}</p>
+          <p className="text-xs text-muted-foreground">
+            {report.exchange} · {report.category}
+          </p>
         </div>
         <Button variant="ghost" size="icon" onClick={handleCopyReport} title="Copy report">
           <Copy className="h-4 w-4" />
@@ -156,8 +180,8 @@ const QuickReport = () => {
           <div>
             <p className="text-sm text-muted-foreground">Current Price</p>
             <p className="text-3xl font-mono font-bold text-foreground">{report.currentPrice}</p>
-            <Badge variant={priceSource === "yahoo-finance" ? "default" : "secondary"} className="mt-1 text-[10px]">
-              {priceSource === "yahoo-finance" ? "Live Price" : "AI Estimated"}
+            <Badge variant={hasLivePrice ? "default" : "secondary"} className="mt-1 text-[10px]">
+              {sourceLabel}
             </Badge>
           </div>
           <Card className={`border ${vc.bg}`}>
@@ -201,9 +225,7 @@ const QuickReport = () => {
         {/* Research Another Asset CTA */}
         <Card className="border-primary/20 bg-secondary/50">
           <CardContent className="p-6 flex flex-col items-center gap-4">
-            <p className="text-sm text-muted-foreground text-center">
-              Want to analyze another asset?
-            </p>
+            <p className="text-sm text-muted-foreground text-center">Want to analyze another asset?</p>
             <Button size="lg" variant="outline" className="h-12 px-8" onClick={() => navigate("/quick-research")}>
               <Search className="mr-2 h-5 w-5" />
               Research Another Asset
@@ -213,7 +235,8 @@ const QuickReport = () => {
 
         <div className="p-4 rounded-lg bg-secondary/50 border border-border/50">
           <p className="text-xs text-muted-foreground text-center">
-            This report is AI-generated for personal research purposes only. It does not constitute financial advice. Always consult a qualified financial advisor.
+            This report is AI-generated for personal research purposes only. It does not constitute financial advice.
+            Always consult a qualified financial advisor.
           </p>
         </div>
       </main>
