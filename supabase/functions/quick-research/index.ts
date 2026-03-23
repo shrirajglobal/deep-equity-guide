@@ -6,56 +6,84 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+type TickerConfig = { symbol: string; unit?: string; stooqSymbol?: string };
+
 // Mapping of common asset names to Yahoo Finance ticker symbols
-const TICKER_MAP: Record<string, { symbol: string; unit?: string }> = {
+const TICKER_MAP: Record<string, TickerConfig> = {
   // Indian stocks
   tcs: { symbol: "TCS.NS" },
   reliance: { symbol: "RELIANCE.NS" },
   infosys: { symbol: "INFY.NS" },
   "hdfc bank": { symbol: "HDFCBANK.NS" },
-  "hdfc": { symbol: "HDFCBANK.NS" },
+  hdfc: { symbol: "HDFCBANK.NS" },
   wipro: { symbol: "WIPRO.NS" },
-  "sbi": { symbol: "SBIN.NS" },
+  sbi: { symbol: "SBIN.NS" },
   "state bank": { symbol: "SBIN.NS" },
   "icici bank": { symbol: "ICICIBANK.NS" },
-  "icici": { symbol: "ICICIBANK.NS" },
-  "kotak": { symbol: "KOTAKBANK.NS" },
+  icici: { symbol: "ICICIBANK.NS" },
+  kotak: { symbol: "KOTAKBANK.NS" },
   "axis bank": { symbol: "AXISBANK.NS" },
   "bajaj finance": { symbol: "BAJFINANCE.NS" },
   "bharti airtel": { symbol: "BHARTIARTL.NS" },
   airtel: { symbol: "BHARTIARTL.NS" },
   "asian paints": { symbol: "ASIANPAINT.NS" },
-  "maruti": { symbol: "MARUTI.NS" },
-  "titan": { symbol: "TITAN.NS" },
-  "nestle": { symbol: "NESTLEIND.NS" },
-  "hul": { symbol: "HINDUNILVR.NS" },
-  "itc": { symbol: "ITC.NS" },
-  "lt": { symbol: "LT.NS" },
-  "larsen": { symbol: "LT.NS" },
+  maruti: { symbol: "MARUTI.NS" },
+  titan: { symbol: "TITAN.NS" },
+  nestle: { symbol: "NESTLEIND.NS" },
+  hul: { symbol: "HINDUNILVR.NS" },
+  itc: { symbol: "ITC.NS" },
+  lt: { symbol: "LT.NS" },
+  larsen: { symbol: "LT.NS" },
   "sun pharma": { symbol: "SUNPHARMA.NS" },
-  "adani": { symbol: "ADANIENT.NS" },
-  "tatamotors": { symbol: "TATAMOTORS.NS" },
+  adani: { symbol: "ADANIENT.NS" },
+  tatamotors: { symbol: "TATAMOTORS.NS" },
   "tata motors": { symbol: "TATAMOTORS.NS" },
   "tata steel": { symbol: "TATASTEEL.NS" },
   "power grid": { symbol: "POWERGRID.NS" },
-  "ntpc": { symbol: "NTPC.NS" },
-  "ongc": { symbol: "ONGC.NS" },
+  ntpc: { symbol: "NTPC.NS" },
+  ongc: { symbol: "ONGC.NS" },
   "coal india": { symbol: "COALINDIA.NS" },
   "tech mahindra": { symbol: "TECHM.NS" },
-  "hcltech": { symbol: "HCLTECH.NS" },
+  hcltech: { symbol: "HCLTECH.NS" },
   "hcl tech": { symbol: "HCLTECH.NS" },
-  "ultratech": { symbol: "ULTRACEMCO.NS" },
-  "dmart": { symbol: "DMART.NS" },
+  ultratech: { symbol: "ULTRACEMCO.NS" },
+  dmart: { symbol: "DMART.NS" },
   "avenue supermarts": { symbol: "DMART.NS" },
-  "zomato": { symbol: "ZOMATO.NS" },
-  "paytm": { symbol: "PAYTM.NS" },
-  "nykaa": { symbol: "NYKAA.NS" },
+  zomato: { symbol: "ZOMATO.NS" },
+  paytm: { symbol: "PAYTM.NS" },
+  nykaa: { symbol: "NYKAA.NS" },
   // Global commodities available on Yahoo
-  gold: { symbol: "GC=F", unit: "/10g" },
-  silver: { symbol: "SI=F", unit: "/kg" },
-  "crude oil": { symbol: "CL=F", unit: "/barrel" },
-  "natural gas": { symbol: "NG=F", unit: "/mmBtu" },
-  copper: { symbol: "HG=F", unit: "/kg" },
+  gold: { symbol: "GC=F", unit: "/10g", stooqSymbol: "gc.f" },
+  "gold futures": { symbol: "GC=F", unit: "/10g", stooqSymbol: "gc.f" },
+  xauusd: { symbol: "GC=F", unit: "/10g", stooqSymbol: "gc.f" },
+  silver: { symbol: "SI=F", unit: "/kg", stooqSymbol: "si.f" },
+  "silver futures": { symbol: "SI=F", unit: "/kg", stooqSymbol: "si.f" },
+  "crude oil": { symbol: "CL=F", unit: "/barrel", stooqSymbol: "cl.f" },
+  crude: { symbol: "CL=F", unit: "/barrel", stooqSymbol: "cl.f" },
+  wti: { symbol: "CL=F", unit: "/barrel", stooqSymbol: "cl.f" },
+  "brent crude": { symbol: "BZ=F", unit: "/barrel", stooqSymbol: "bz.f" },
+  brent: { symbol: "BZ=F", unit: "/barrel", stooqSymbol: "bz.f" },
+  "natural gas": { symbol: "NG=F", unit: "/mmBtu", stooqSymbol: "ng.f" },
+  natgas: { symbol: "NG=F", unit: "/mmBtu", stooqSymbol: "ng.f" },
+  copper: { symbol: "HG=F", unit: "/kg", stooqSymbol: "hg.f" },
+  aluminium: { symbol: "ALI=F", unit: "/tonne" },
+  aluminum: { symbol: "ALI=F", unit: "/tonne" },
+  zinc: { symbol: "ZNC=F", unit: "/tonne" },
+  lead: { symbol: "LEA=F", unit: "/tonne" },
+  nickel: { symbol: "NIK=F", unit: "/tonne" },
+  platinum: { symbol: "PL=F", unit: "/oz", stooqSymbol: "pl.f" },
+  palladium: { symbol: "PA=F", unit: "/oz", stooqSymbol: "pa.f" },
+  wheat: { symbol: "ZW=F", unit: "/bushel", stooqSymbol: "zw.f" },
+  corn: { symbol: "ZC=F", unit: "/bushel", stooqSymbol: "zc.f" },
+  soybean: { symbol: "ZS=F", unit: "/bushel", stooqSymbol: "zs.f" },
+  soybeans: { symbol: "ZS=F", unit: "/bushel", stooqSymbol: "zs.f" },
+  sugar: { symbol: "SB=F", unit: "/lb", stooqSymbol: "sb.f" },
+  coffee: { symbol: "KC=F", unit: "/lb", stooqSymbol: "kc.f" },
+  cotton: { symbol: "CT=F", unit: "/lb", stooqSymbol: "ct.f" },
+  cocoa: { symbol: "CC=F", unit: "/tonne", stooqSymbol: "cc.f" },
+  "orange juice": { symbol: "OJ=F", unit: "/lb", stooqSymbol: "oj.f" },
+  "heating oil": { symbol: "HO=F", unit: "/gallon", stooqSymbol: "ho.f" },
+  gasoline: { symbol: "RB=F", unit: "/gallon", stooqSymbol: "rb.f" },
   // Forex
   "usd/inr": { symbol: "USDINR=X" },
   "eur/inr": { symbol: "EURINR=X" },
@@ -63,7 +91,31 @@ const TICKER_MAP: Record<string, { symbol: string; unit?: string }> = {
   "jpy/inr": { symbol: "JPYINR=X" },
 };
 
-async function fetchYahooPrice(symbol: string): Promise<{ price: number | null; currency: string }> {
+type QuoteResult = {
+  price: number | null;
+  currency: string;
+  source: "yahoo-finance" | "stooq-fallback" | "unavailable";
+};
+type CacheEntry = { value: QuoteResult; ts: number };
+
+const PRICE_CACHE_TTL_MS = 20_000;
+const quoteCache = new Map<string, CacheEntry>();
+
+function getCachedQuote(symbol: string): QuoteResult | null {
+  const cached = quoteCache.get(symbol);
+  if (!cached) return null;
+  if (Date.now() - cached.ts > PRICE_CACHE_TTL_MS) {
+    quoteCache.delete(symbol);
+    return null;
+  }
+  return cached.value;
+}
+
+function setCachedQuote(symbol: string, value: QuoteResult) {
+  quoteCache.set(symbol, { value, ts: Date.now() });
+}
+
+async function fetchYahooPrice(symbol: string): Promise<QuoteResult> {
   try {
     // Use v8 chart endpoint — works without authentication
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=1d&interval=1d`;
@@ -72,22 +124,51 @@ async function fetchYahooPrice(symbol: string): Promise<{ price: number | null; 
     });
     if (!resp.ok) {
       console.error(`Yahoo Finance v8 returned ${resp.status} for ${symbol}`);
-      return { price: null, currency: "INR" };
+      return { price: null, currency: "INR", source: "unavailable" };
     }
     const data = await resp.json();
     const meta = data?.chart?.result?.[0]?.meta;
-    if (!meta) return { price: null, currency: "INR" };
+    if (!meta) return { price: null, currency: "INR", source: "unavailable" };
     return {
       price: meta.regularMarketPrice ?? null,
       currency: meta.currency ?? "INR",
+      source: "yahoo-finance",
     };
   } catch (e) {
     console.error(`Failed to fetch Yahoo price for ${symbol}:`, e);
-    return { price: null, currency: "INR" };
+    return { price: null, currency: "INR", source: "unavailable" };
   }
 }
 
-function findTicker(name: string): { symbol: string; unit?: string } | null {
+async function fetchStooqPrice(stooqSymbol: string): Promise<QuoteResult> {
+  try {
+    // Stooq sometimes emits malformed JSON with an empty `volume` token.
+    const url = `https://stooq.com/q/l/?s=${encodeURIComponent(stooqSymbol.toLowerCase())}&f=sd2t2ohlcvn&e=json`;
+    const resp = await fetch(url, {
+      headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" },
+    });
+    if (!resp.ok) {
+      console.error(`Stooq returned ${resp.status} for ${stooqSymbol}`);
+      return { price: null, currency: "USD", source: "unavailable" };
+    }
+
+    const rawText = await resp.text();
+    const sanitized = rawText.replace(/"volume":,/g, '"volume":null,');
+    const parsed = JSON.parse(sanitized);
+    const close = parsed?.symbols?.[0]?.close;
+
+    if (typeof close !== "number" || Number.isNaN(close) || close <= 0) {
+      return { price: null, currency: "USD", source: "unavailable" };
+    }
+
+    return { price: close, currency: "USD", source: "stooq-fallback" };
+  } catch (e) {
+    console.error(`Failed to fetch Stooq price for ${stooqSymbol}:`, e);
+    return { price: null, currency: "USD", source: "unavailable" };
+  }
+}
+
+function findTicker(name: string): TickerConfig | null {
   const key = name.toLowerCase().trim();
   // Direct match
   if (TICKER_MAP[key]) return TICKER_MAP[key];
@@ -98,10 +179,46 @@ function findTicker(name: string): { symbol: string; unit?: string } | null {
   return null;
 }
 
+async function fetchMarketPrice(ticker: TickerConfig): Promise<QuoteResult> {
+  const cached = getCachedQuote(ticker.symbol);
+  if (cached) return cached;
+
+  const yahoo = await fetchYahooPrice(ticker.symbol);
+  if (yahoo.price !== null) {
+    setCachedQuote(ticker.symbol, yahoo);
+    return yahoo;
+  }
+
+  if (ticker.stooqSymbol) {
+    const stooq = await fetchStooqPrice(ticker.stooqSymbol);
+    if (stooq.price !== null) {
+      setCachedQuote(ticker.symbol, stooq);
+      return stooq;
+    }
+  }
+
+  return { price: null, currency: "INR", source: "unavailable" };
+}
+
 // Convert USD commodity prices to INR approximations
 async function getUsdInrRate(): Promise<number> {
   try {
-    const { price } = await fetchYahooPrice("USDINR=X");
+    const cached = getCachedQuote("USDINR=X");
+    if (cached?.price) return cached.price;
+
+    const yahoo = await fetchYahooPrice("USDINR=X");
+    if (yahoo.price) {
+      setCachedQuote("USDINR=X", yahoo);
+      return yahoo.price;
+    }
+
+    const stooq = await fetchStooqPrice("usdinr");
+    if (stooq.price) {
+      setCachedQuote("USDINR=X", { ...stooq, currency: "INR" });
+      return stooq.price;
+    }
+
+    const { price } = yahoo;
     return price ?? 83.5;
   } catch {
     return 83.5;
@@ -124,7 +241,7 @@ serve(async (req) => {
 
     if (ticker) {
       const [quoteResult, usdInr] = await Promise.all([
-        fetchYahooPrice(ticker.symbol),
+        fetchMarketPrice(ticker),
         ticker.symbol.includes("=F") && !ticker.symbol.includes("INR") ? getUsdInrRate() : Promise.resolve(1),
       ]);
 
@@ -154,7 +271,7 @@ serve(async (req) => {
         }).format(finalPrice);
 
         livePrice = `₹${formatted}${ticker.unit || ""}`;
-        priceSource = "yahoo-finance";
+        priceSource = quoteResult.source;
       }
     }
 
@@ -206,24 +323,33 @@ Important:
     if (!response.ok) {
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted. Please add credits in Settings → Workspace → Usage." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return new Response(
+          JSON.stringify({ error: "AI credits exhausted. Please add credits in Settings → Workspace → Usage." }),
+          {
+            status: 402,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
       }
       const errorText = await response.text();
       console.error("AI gateway error:", response.status, errorText);
       return new Response(JSON.stringify({ error: "AI analysis failed" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const aiResponse = await response.json();
     let content = aiResponse.choices?.[0]?.message?.content || "";
-    content = content.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
+    content = content
+      .replace(/```json\s*/g, "")
+      .replace(/```\s*/g, "")
+      .trim();
 
     let report;
     try {
@@ -231,7 +357,8 @@ Important:
     } catch {
       console.error("Failed to parse AI response:", content);
       return new Response(JSON.stringify({ error: "Failed to parse AI response" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -244,16 +371,19 @@ Important:
       report.currentPrice = livePrice;
     }
 
-    return new Response(JSON.stringify({
-      report: { ...report, assetType, priceSource },
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        report: { ...report, assetType, priceSource },
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   } catch (e) {
     console.error("quick-research error:", e);
-    return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });
